@@ -1,9 +1,17 @@
+require('dotenv').config();
+
 const http = require('http');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const bcrypt = require('bcryptjs');
 const es6Renderer = require('express-es6-template-engine');
+
+const session = require('express-session');
+const FileStore = require('session-file-store')(session)
+
+const { requireLogin, logout } = require('./auth')
+
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +23,17 @@ const logger = morgan('tiny');
 app.engine('html', es6Renderer);
 app.set('views', 'templates');
 app.set('view engine', 'html');
+
+app.use(session({
+    store: new FileStore(),  // no options for now
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized: false,
+    resave: true,
+    rolling: true,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7 // how many ms until session expires, 1 week
+    }
+}));
 
 const Sequelize = require('sequelize');
 const { User } = require('./models');
@@ -80,7 +99,13 @@ app.post('/login', async (req, res) => {
         const isValid = bcrypt.compareSync(password, user.hash);
         if (isValid) {
             console.log('password is good!');
-            res.redirect('/members-only');
+            req.session.user = {
+                username
+            };
+            req.session.save(() => {
+                res.redirect('/members-only');                
+            });
+            
         } else {
             console.log('but password is wrong');
             res.redirect('/login');
@@ -91,10 +116,18 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/members-only', (req, res) => {
-    res.render('member');
+app.get('/members-only', requireLogin, (req, res) => {
+    const { username } = req.session.user;
+    res.render('member', {
+        locals: {
+            username
+        }
+    });
 });
 
+app.get('/unauthorized', (req, res) => {
+    res.send(`You shall not pass!`);
+});
 
 server.listen(PORT, () => {
     console.log(`Listening at http://localhost:${PORT}`);
