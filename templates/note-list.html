@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note list</title>
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Notes</h1>
+        </div>
+        <div>
+            <ul>
+                ${note.map(n=>{
+                    return `<li>${n.title}<br>${n.content}</li>`
+                }).join('')}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

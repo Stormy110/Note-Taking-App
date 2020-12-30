@@ -20,6 +20,7 @@ const PORT = 3000;
 
 const logger = morgan('tiny');
 
+app.use(express.static('public'))
 app.engine('html', es6Renderer);
 app.set('views', 'templates');
 app.set('view engine', 'html');
@@ -36,7 +37,7 @@ app.use(session({
 }));
 
 const Sequelize = require('sequelize');
-const { User } = require('./models');
+const { User, Note } = require('./models');
 
 app.use(logger);
 
@@ -100,7 +101,8 @@ app.post('/login', async (req, res) => {
         if (isValid) {
             console.log('password is good!');
             req.session.user = {
-                username
+                username,
+                id: user.id
             };
             req.session.save(() => {
                 res.redirect('/members-only');                
@@ -123,6 +125,47 @@ app.get('/members-only', requireLogin, (req, res) => {
             username
         }
     });
+});
+
+
+app.get('/note/create', requireLogin, (req,res)=>{
+    res.render('note-form')
+});
+
+app.post('/note/create', async (req,res)=>{
+    const { title } = req.body;
+    const { content } = req.body;
+    const { id } = req.session.user;
+    if(title && id) {
+        const newNote = await Note.create({
+            title,
+            content,
+            userID: id
+        });
+        console.log('error here')
+        res.redirect('/note')
+    } else {
+        console.log('or error here')
+        res.redirect('/members-only')
+    };
+});
+
+app.get('/note', requireLogin, async (req,res)=>{
+    const { id } = req.session.user;
+    if (id) {
+        const note = await Note.findAll({
+            where: {
+                userID: id
+            }
+        });
+        res.render('note-list', {
+            locals: {
+                note
+            }
+        })
+    } else {
+        res.redirect('/')
+    }
 });
 
 app.get('/unauthorized', (req, res) => {
