@@ -142,10 +142,9 @@ app.post('/note/create', async (req,res)=>{
             content,
             userID: id
         });
-        console.log('error here')
         res.redirect('/note')
     } else {
-        console.log('or error here')
+        
         res.redirect('/members-only')
     };
 });
@@ -168,9 +167,58 @@ app.get('/note', requireLogin, async (req,res)=>{
     }
 });
 
+app.get('/note/:title', requireLogin, async (req,res)=>{
+    const { title } = req.params;
+    const { id } = req.session.user;
+
+    if (id) {
+        const note = await Note.findAll({
+            where: {
+                userID: id
+            }
+        });
+        const foundTitle = note.find(n=>n.title == title);
+        const fTitle = foundTitle.title;
+        const fContent = foundTitle.content;
+    res.render('note-page', {
+        locals: {
+            title,
+            note,
+            fTitle,
+            fContent
+        }
+    })
+}});
+
+app.get('/search', requireLogin, (req,res)=>{
+    res.render('note-search')
+});
+
+app.post('/search', requireLogin, async (req,res)=>{
+    const { title } = req.body;
+    const { id } = req.session.user;
+    if (id) {
+        const note = await Note.findAll({
+            where: {
+                userID: id,
+                title
+            }
+        });
+        res.render('note-search-list', {
+            locals: {
+                note
+            }
+        })
+    }
+
+})
+
+
 app.get('/unauthorized', (req, res) => {
     res.send(`You shall not pass!`);
 });
+
+app.get('/logout', logout);
 
 server.listen(PORT, () => {
     console.log(`Listening at http://localhost:${PORT}`);

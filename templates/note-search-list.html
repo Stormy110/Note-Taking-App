@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Search List</title>
+</head>
+<body>
+    <div>
+        <h1>Notes</h1>
+    </div>
+    <div>
+        <ul>
+            ${note.map(n=>{
+                return `<li><a href='/note/${n.title}'>${n.title}</a><br>${n.content}</li>`
+            }).join('')}
+        </ul>
+    </div>
+    <br>
+    <div>
+        <a href="/members-only"><button>Home</button></a>
+        <a href="/note/create"><button>Create a new note</button></a>
+        <a href="/search"><button>Search</button></a>
+        <a href="/note"><button>Notes</button></a>
+    </div>
+</body>
+</html>

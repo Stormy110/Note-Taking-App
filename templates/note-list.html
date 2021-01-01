@@ -13,9 +13,14 @@
         <div>
             <ul>
                 ${note.map(n=>{
-                    return `<li>${n.title}<br>${n.content}</li>`
+                    return `<li><a href='/note/${n.title}'>${n.title}</a><br>${n.content}</li>`
                 }).join('')}
             </ul>
+        </div>
+        <div>
+            <a href="/members-only"><button>Home</button></a>
+            <a href="/note/create"><button>Create a new note</button></a>
+            <a href="/search"><button>Search</button></a>
         </div>
     </div>
 </body>
