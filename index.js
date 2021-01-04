@@ -167,6 +167,18 @@ app.get('/note', requireLogin, async (req,res)=>{
     }
 });
 
+app.get('/note/:id', async (req,res)=>{
+    console.log(`The id is ${req.params.id}`);
+    const note = await Note.findByPk(req.params.id);
+    res.render('note-id',{
+        locals: {
+            title: note.title,
+            content: note.content
+        }
+    })
+});
+
+
 app.get('/note/:title', requireLogin, async (req,res)=>{
     const { title } = req.params;
     const { id } = req.session.user;
